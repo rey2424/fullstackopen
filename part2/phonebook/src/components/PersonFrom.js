@@ -1,4 +1,5 @@
 import React from 'react'
+import personsService from '../services/persons'
 
 const PersonForm = ({newName, newNumber, persons, setPersons, setNewName, setNewNumber}) => {
     
@@ -7,16 +8,35 @@ const PersonForm = ({newName, newNumber, persons, setPersons, setNewName, setNew
     const nameObj = {
       name: newName,
       number: newNumber
-    }    
-    if(persons.some(p => p.name.toLowerCase()=== newName.toLowerCase()))
-    { alert(`${newName} is already added to the phonebook`)    } 
-    else {
-      setPersons(persons.concat(nameObj))
-      setNewName('')
-      setNewNumber('')
-    }  
-  }
+    } 
+      
+    if(persons.some(p => p.name.toLowerCase() === newName.toLowerCase()))
+    { 
+      const personUpdate = persons.filter(p => p.name.toLowerCase() === newName.toLowerCase())
+      
+      if (window.confirm(`${newName} is already added to the phonebook, 
+      replace the old number with a new one?`)) {  
+        personsService
+          .update(personUpdate[0].id, nameObj)
+          .then(retP => {
+            setPersons(persons.map(p => p.id === personUpdate[0].id ? retP : p))
+            setNewName('')
+            setNewNumber('')
+          })
+         } 
+       
+        } else{
+    personsService
+      .create(nameObj)
+      .then(retP => {
+        setPersons(persons.concat(retP))
+        setNewName('')
+        setNewNumber('')
+        })  }
 
+    }
+    
+  
   const addName = (e) => {
     setNewName(e.target.value)
   }
