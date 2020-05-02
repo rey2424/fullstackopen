@@ -1,7 +1,7 @@
 import React from 'react'
 import personsService from '../services/persons'
 
-const PersonForm = ({newName, newNumber, persons, setPersons, setNewName, setNewNumber}) => {
+const PersonForm = ({setMessage, newName, newNumber, persons, setPersons, setNewName, setNewNumber}) => {
     
   const addPerson = (e) => {
     e.preventDefault()
@@ -12,16 +12,25 @@ const PersonForm = ({newName, newNumber, persons, setPersons, setNewName, setNew
       
     if(persons.some(p => p.name.toLowerCase() === newName.toLowerCase()))
     { 
-      const personUpdate = persons.filter(p => p.name.toLowerCase() === newName.toLowerCase())
+      const personUpdate = persons.find(p => p.name.toLowerCase() === newName.toLowerCase())
       
       if (window.confirm(`${newName} is already added to the phonebook, 
       replace the old number with a new one?`)) {  
         personsService
-          .update(personUpdate[0].id, nameObj)
+          .update(personUpdate.id, nameObj)
           .then(retP => {
-            setPersons(persons.map(p => p.id === personUpdate[0].id ? retP : p))
+            setPersons(persons.map(p => p.id === personUpdate.id ? retP : p))
             setNewName('')
             setNewNumber('')
+
+          })
+          .catch(error => {
+            setMessage(
+              `Information of ${personUpdate.name} has already been removed from server`
+            )
+            setTimeout(() => {
+              setMessage(null)
+            }, 5000)   
           })
          } 
        
@@ -32,7 +41,17 @@ const PersonForm = ({newName, newNumber, persons, setPersons, setNewName, setNew
         setPersons(persons.concat(retP))
         setNewName('')
         setNewNumber('')
-        })  }
+
+        setMessage(
+          `Added ${nameObj.name}`
+        )
+        setTimeout(() => {
+          setMessage(null)
+        }, 2000) 
+        })  
+
+      
+      }
 
     }
     
